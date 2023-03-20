@@ -257,7 +257,7 @@ def edit_address(request, id):
 @login_required(login_url='accounts:accounts-login')
 def delete_address(request, id):
     address = Address.objects.filter(pk=id, customer=request.user).delete()
-    return redirect("account:addresses")
+    return redirect("accounts:addresses")
 
 
 @login_required(login_url='accounts:accounts-login')

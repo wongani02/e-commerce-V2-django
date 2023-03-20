@@ -47,12 +47,16 @@
                                                 </a>
                                             </td>
                                             <td class="product-name"><a href="{% url 'store:product-detail' product.product_url %}">{{ product.product_name }}</a></td>
+                                            {% if product.discount_price %}
+                                            <td class="product-price-cart"><span class="amount">${{ product.discount_price }}</span></td>
+                                            {% else %}
                                             <td class="product-price-cart"><span class="amount">${{ product.regular_price }}</span></td>
+                                            {% endif %}
                                             <td class="product-quantity pro-details-quality">
                                                 <div class="cart-plus-minus">
                                                     <form method="post">
                                                         {% csrf_token %}
-                                                        <input id="select{{product.id}}" class="cart-plus-minus-box" type="text" name="qtybutton" value="{{item.qty}}">
+                                                        <input id="select{{product.id}}" class="cart-plus-minus-box" type="text" name="qtybutton" value="{{item.qty}}" max="{{product.in_stock}}">
                                                     </form>
                                                 </div>
                                             </td>

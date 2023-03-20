@@ -110,7 +110,7 @@
                                 <div class="cart-plus-minus">
                                     <form method="post">
                                         {% csrf_token %}
-                                        <input class="cart-plus-minus-box" id="select" type="number" maxlength="{{product.in_stock}}" max="{{product.in_stock}}" name="qtybutton" value="1">
+                                        <input class="cart-plus-minus-box" id="select" type="number" maxlength="{{product.in_stock}}"  name="qtybutton" value="1">
                                     </form>
                                 </div>
                             </div>
@@ -126,7 +126,7 @@
                                     {% if product.in_stock > 0 %}
                                     <button id="add-button" class="btn-style-1" value="{{product.id}}" title="Add to Cart">Add To Cart</button>
                                     {% else %}
-                                    <button disabled class="btn-style-1" value="{{product.id}}" title="Add to Cart">Add To Cart</button>
+                                    <button disabled class="btn-style-1" onclick="{alert('Product out of Stock')}" title="Add to Cart">Add To Cart</button>
                                     {% endif %}
                                 </div>
                                 <div class="pro-details-action">
@@ -583,10 +583,14 @@
         
         <script>
             $(document).on('click', '#add-button', function (e){
-                alert('product added to cart')
+                
                 e.preventDefault();
                 console.log($('#select').val());
-                $.ajax({
+                if ($('#select').val() > `{{product.in_stock}}`){
+                    alert('This product has {{product.in_stock}} items in stock')
+                }else{
+                    alert('product added to cart')
+                    $.ajax({
                     type: 'POST',
                     url : "{% url 'basket:basket_add' %}",
                     data: {
@@ -602,7 +606,9 @@
                     error: function(xhr, errmsg, err ){
 
                     }
-                });
+                    });
+                }
+                
             })
         </script>
         <script>

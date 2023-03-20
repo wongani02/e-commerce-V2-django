@@ -42,7 +42,11 @@
 </head>
 
 <body>
-
+    <!-- <div class="d-flex justify-content-center">
+        <div class="spinner-grow" style="width: 3rem; height: 3rem;" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div> -->
     <div class="main-wrapper box-layout-width" >
         <header class="header-area bg-white">
             <div class="header-large-device section-padding-2">
@@ -72,7 +76,7 @@
                                     <div class="search-wrap-2">
                                         <form method="post" action="{% url 'store:search' %}">
                                             {% csrf_token %}
-                                            <input name="search_q" placeholder="Type anything & Hit enter" type="text" required>
+                                            <input name="search_q" placeholder="Type anything & Hit enter" title="search anything here" type="text" required>
                                             <button type="su
                                             " class="button-search"><i class="icon-magnifier"></i></button>
                                         </form>

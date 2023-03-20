@@ -40,9 +40,9 @@ class ProductSpecificationValueInline(admin.TabularInline):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ['product_name', 'slug', 'regular_price', 'in_stock', 'created_at', 'updated_at']
+    list_display = ['product_name', 'regular_price', 'in_stock', 'created_at']
     prepopulated_fields = {'slug': ('product_name',)}
-    list_filter = ['in_stock', 'is_active']
+    list_filter = ['created_at']
     inlines = [
         ProductSpecificationValueInline,
         ProductImageInline,
