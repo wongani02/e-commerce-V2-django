@@ -72,28 +72,45 @@
                             
                             <div class="myaccount-content">
                                 
-                                
-                                <h3>Your Selected Billing Address<small></small></h3>
-                                {% for item in addresses %}
-                                <div data-index="{{item.id}}">
+                                {% if request.user.is_authenticated %}
+                                    <h3>Your Selected Billing Address<small></small></h3>
+                                    {% for item in addresses %}
+                                    <div data-index="{{item.id}}">
+                                        
+                                        {% if item.default %}
+                                        <h3>Selected</h3>
+                                        
+                                        <address>
+                                            <p><strong>{{item.full_name}}</strong></p>
+                                            <p>{{item.address_line}}<br>
+                                        {{item.address_line2}}</p>
+                                            <p>{{ item.town_city}}</p>
+                                            <p>{{ item.postcode}}</p>
+                                            <p>Mobile:{{item.phone}}</p>
+                                        </address>
+                                        {% endif %}
+                                        
+                                        
+                                        
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <h3>Your Billing Details<small></small></h3>
                                     
-                                    {% if item.default %}
-                                    <h3>Selected</h3>
-                                    
-                                    <address>
-                                        <p><strong>{{item.full_name}}</strong></p>
-                                        <p>{{item.address_line}}<br>
-                                    {{item.address_line2}}</p>
-                                        <p>{{ item.town_city}}</p>
-                                        <p>{{ item.postcode}}</p>
-                                        <p>Mobile:{{item.phone}}</p>
-                                    </address>
-                                    {% endif %}
-                                    
-                                    
-                                    
-                                </div>
-                                {% endfor %}
+                                    <div data-index="">  
+                                        <address>
+                                            <p><strong>{{addresses.first_name}} {{addresses.last_name}}</strong></p>
+                                            <p>{{addresses.email}}<br>
+                                                {{addresses.street_address}}<br>
+                                                {{addresses.other_address}}
+                                            </p>
+                                            <p>{{ addresses.district_or_city}}</p>
+                                            <p>{{ addresses.postcode}}</p>
+                                            <p>Mobile:{{addresses.phone_number}}</p><br>
+                                            <p>{{addresses.additional_notes}}</p>
+                                        </address>   
+                                    </div>
+                                {% endif %}
                                 
                             </div> 
                         </div>
@@ -111,7 +128,7 @@
                                             <ul>
                                                 {% for item in basket %}
                                                     {% with product=item.product %}
-                                                        <li>{{ product.product_name }} X {{item.qty}} <span>${{ product.regular_price }} </span></li>
+                                                        <li>{{ product.product_name }} X {{item.qty}} <span>MWK {{ product.regular_price }} </span></li>
                                                     {% endwith %}
                                                 {% endfor %}
                                                 <!-- <li>Product Name X 1 <span>$329 </span></li> -->
@@ -119,8 +136,8 @@
                                         </div>
                                         <div class="your-order-info order-subtotal">
                                             <ul>
-                                                <li>Subtotal <span>${{basket.get_subtotal_price}} </span></li>
-                                                <li>Delivery fee <span>${{basket.get_delivery_price}} </span></li>
+                                                <li>Subtotal <span>MWK {{basket.get_subtotal_price}} </span></li>
+                                                <li>Delivery fee <span>MWK {{basket.get_delivery_price}} </span></li>
                                             </ul>
                                         </div>
                                         <!-- <div class="your-order-info order-shipping">
@@ -131,7 +148,7 @@
                                         </div> -->
                                         <div class="your-order-info order-total">
                                             <ul>
-                                                <li>Total <span>${{basket.get_total_price}} </span></li>
+                                                <li>Total <span>MWK {{basket.get_total_price}} </span></li>
                                             </ul>
                                         </div>
                                     </div>
@@ -159,14 +176,14 @@
                                         </div> -->
                                         <div class="pay-top sin-payment sin-payment-3">
                                             <input id="payment-method-4" checked="checked" class="input-radio" type="radio" value="cheque" name="payment_method">
-                                            <label for="payment-method-4">PayPal <img alt="" src="assets/images/icon-img/payment.png"><a href="#">What is PayPal?</a></label>
+                                            <label for="payment-method-4">PayPal <img alt="" src="{% static 'assets/images/icon-img/payment.png' %}"><a href="#">What is PayPal?</a></label>
                                             <div class="payment-box payment_method_bacs">
                                                 <p>Make your payment directly into our bank account. Please use your Order ID as the payment reference.</p>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <script src="https://www.paypal.com/sdk/js?client-id=AfDx3yQgVBzG5LfDvijqX53CGeGf2cdxY8tCsf9xS-vgkcT3yJUPJ_e3uKbnfMHUr6yH-SgnXZ2N4rEi&currency=USD"></script>
+                                <script src="https://www.paypal.com/sdk/js?client-id=AfDx3yQgVBzG5LfDvijqX53CGeGf2cdxY8tCsf9xS-vgkcT3yJUPJ_e3uKbnfMHUr6yH-SgnXZ2N4rEi&currency=USD&locale=en_MW"></script>
                                 <div class="Place-order">
                                     <div id="paypal-button-container"></div>
                                     
@@ -196,42 +213,62 @@
             const csrftoken = getCookie('csrftoken');
 
             function initPayPalButton() {
-                paypal.Buttons({
-                style: {
-                    shape: 'rect',
-                    color: 'gold',
-                    layout: 'vertical',
-                    label: 'paypal',
-
-                },
-                createOrder: function (data, actions) {
-                    return actions.order.create({
-                    purchase_units: [{
-                        "amount": {
-                        "currency_code": "USD",
-                        "value": '{{basket.get_total_price}}'
-                        }
-                    }]
-                    });
-                },
-                onApprove: function (data) {
-                    var url = "{% url 'checkout:payment_complete' %}"
-                    return fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'content-type': 'application/json',
-                        'X-CSRFToken': csrftoken,
+                    paypal.Buttons({
+                    style: {
+                        shape: 'rect',
+                        color: 'gold',
+                        layout: 'vertical',
+                        label: 'paypal',
+              
                     },
-                    body: JSON.stringify({
-                        orderID: data.orderID
-                    })
-                    }).then(function () {
-                        location.href = "{% url 'checkout:payment_successful' %}";
-                    })
-                },
-                }).render('#paypal-button-container');
-            }
-            initPayPalButton();
+                    createOrder: function (data, actions) {
+                        return actions.order.create({
+                        purchase_units: [{
+                            "amount": {
+                            "currency_code": "USD",
+                            "value": '{{basket.get_total_price}}'
+                            }
+                        }]
+                        });
+                    },
+                    onCancel(data) {
+                        // Show a cancel page, or return to cart
+                        console.log('cancelled')
+                    },
+                    onApprove: function (data, actions) {
+                        var url = "{% url 'checkout:payment_complete' %}"
+                        return actions.order.capture().then(function(orderData) {
+                            return fetch(url, {
+                                method: 'POST',
+                                headers: {
+                                    'content-type': 'application/json',
+                                    'X-CSRFToken': csrftoken,
+                                },
+                                body: JSON.stringify({
+                                    orderID: data.orderID,
+                                    name: orderData.payer.name.given_name,
+                                    email: orderData.payer.email_address,
+                                    fullname: orderData.purchase_units[0].shipping.name.full_name,
+                                    totalPaid: orderData.purchase_units[0].amount.value,
+                                    orderId: orderData.id,
+                                    countryCode: orderData.purchase_units[0].shipping.address.country_code,
+                                    postalCode: orderData.purchase_units[0].shipping.address.postal_code,
+                                    address_1: orderData.purchase_units[0].shipping.address.address_line_1,
+                                    address_2: orderData.purchase_units[0].shipping.address.admin_area_2,
+                                })
+                                }).then(function () {
+                                    location.href = "{% url 'checkout:payment_successful' %}";
+                                })
+                            })
+                    },
+                    onError(err) {
+                        // For example, redirect to a specific error page
+                        // window.location.href = "";
+                        console.log('error occurred')
+                    }
+                    }).render('#paypal-button-container');
+                }
+                initPayPalButton();
             // paypal.Buttons({
             //   // Sets up the transaction when a payment button is clicked
             //   createOrder: (data, actions) => {
@@ -259,31 +296,5 @@
             // }).render('#paypal-button-container');
           
           </script>
-        <!-- <div class="subscribe-area bg-gray pt-115 pb-115">
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-5 col-md-5">
-                        <div class="section-title">
-                            <h2>keep connected</h2>
-                            <p>Get updates by subscribe our weekly newsletter</p>
-                        </div>
-                    </div>
-                    <div class="col-lg-7 col-md-7">
-                        <div id="mc_embed_signup" class="subscribe-form">
-                            <form id="mc-embedded-subscribe-form" class="validate subscribe-form-style" novalidate="" target="_blank" name="mc-embedded-subscribe-form" method="post" action="http://devitems.us11.list-manage.com/subscribe/post?u=6bbb9b6f5827bd842d9640c82&amp;id=05d85f18ef">
-                                <div id="mc_embed_signup_scroll" class="mc-form">
-                                    <input class="email" type="email" required="" placeholder="Enter your email address" name="EMAIL" value="">
-                                    <div class="mc-news" aria-hidden="true">
-                                        <input type="text" value="" tabindex="-1" name="b_6bbb9b6f5827bd842d9640c82_05d85f18ef">
-                                    </div>
-                                    <div class="clear">
-                                        <input id="mc-embedded-subscribe" class="button" type="submit" name="subscribe" value="Subscribe">
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div> -->
+        
         {% endblock %}

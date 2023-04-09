@@ -28,6 +28,8 @@ urlpatterns = [
     path('basket/', include('basket.urls', namespace='basket')),
     path('account/', include('accounts.urls', namespace='accounts')),
     path('checkout/', include('checkout.urls', namespace='checkout')),
+    path('orders/', include('order.urls', namespace='orders')),
+    path('dashboard/', include('services.dashboard.urls', namespace='dashboard')),
     path('accounts/', include('allauth.urls')),
     re_path(r'^download/(?P<path>.*)$', serve,{'document_root': settings.MEDIA_ROOT}),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

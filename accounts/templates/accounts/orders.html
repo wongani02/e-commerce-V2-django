@@ -51,8 +51,8 @@
                                                                 <tr>
                                                                     <td>{{item.product|title}}</td>
                                                                     <td>{{ order.created }}</td>
-                                                                    <td>Pending</td>
-                                                                    <td>${{ order.total_paid }}</td>
+                                                                    <td>{{order.order_status}}</td>
+                                                                    <td>MWK {{ order.total_paid }}</td>
                                                                     <td><a href="{% url 'store:product-detail' item.product.product_url %}" class="check-btn sqr-btn ">View</a></td>
                                                                 </tr>
                                                                 {% endfor %}

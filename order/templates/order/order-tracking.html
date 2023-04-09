@@ -1,0 +1,52 @@
+{% extends 'store/base.html' %}
+{% load static %}
+{% block content %}
+
+        <div class="breadcrumb-area bg-gray">
+            <div class="container">
+                <div class="breadcrumb-content text-center">
+                    <ul>
+                        <li>
+                            <h3>Track Your Order</h3>
+                        </li>
+                        <!-- <li class="active">Account Deleted</li> -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="order-tracking-area pt-110 pb-120">
+            <div class="container">
+                <div class="row">
+                    <div class="col-xl-6 col-lg-8 col-md-10 ml-auto mr-auto">
+                        <div class="order-tracking-content">
+                            <h3>To Track your order please enter the follwing details
+                            </h3>
+                            <div class="order-tracking-form">
+                                <form method="post" action="{% url 'orders:track-order' %}">
+                                    {% csrf_token %}
+                                    
+                                    <div class="sin-order-tracking">
+                                        <label>Order ID</label>
+                                        <!-- <input type="text" placeholder="Found in your order confirmation email."> -->
+                                        {{form.order_key}}
+                                        {{form.order_key.errors}}
+                                    </div>
+                                    <div class="sin-order-tracking">
+                                        <label>Billing Email</label>
+                                        <!-- <input type="email" placeholder="Email you used during checkout">
+                                         -->
+                                        {{form.order_email}}
+                                        {{form.order_email.errors}}
+                                    </div>
+                                    <div class="order-track-btn">
+                                        <button class="btn btn-dark w-100" type="submit">View Receipt</button>
+                                    </div>
+                                </form>
+                            </div> 
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endblock %}

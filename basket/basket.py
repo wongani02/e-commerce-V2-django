@@ -117,8 +117,11 @@ class Basket():
     def clear(self):
         # Remove basket from session
         del self.session['skey']
-        del self.session["address"]
-        del self.session["purchase"]
+        if 'purchase' in self.session:
+            del self.session["purchase"]
+        if 'address' in self.session:
+            del self.session["address"]
+            
         self.save()
 
     def save(self):

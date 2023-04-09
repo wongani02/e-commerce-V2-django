@@ -8,6 +8,9 @@ from .models import (
     ProductSpecification,
     ProductSpecificationValue,
     ProductType,
+    BlogPost,
+    BlogImage,
+    About
 )
 
 # Register your models here.
@@ -48,15 +51,22 @@ class ProductAdmin(admin.ModelAdmin):
         ProductImageInline,
     ]
 
-# @admin.register(Category)
-# class CategoryAdmin(admin.ModelAdmin):
-#     list_display = ['name', 'slug']
-#     prepopulated_fields = {'slug': ('name',)}
+
+class BlogImageInline(admin.TabularInline):
+    model = BlogImage
 
 
-# @admin.register(Product)
-# class ProductAdmin(admin.ModelAdmin):
-#     list_display = ['name', 'author', 'slug', 'price', 'discount_price', 'in_stock', 'created', 'updated']
-#     list_filter = ['in_stock', 'is_active']
-#     list_editable = ['price', 'discount_price', 'in_stock']
-#     prepopulated_fields = {'slug': ('name',)}
+@admin.register(BlogPost)
+class BlogPostModelAdmin(admin.ModelAdmin):
+    inlines = [BlogImageInline]
+    prepopulated_fields = {'slug': ('title',)}
+    list_display = ['title', 'created']
+    list_filter = [
+        'created'
+    ]
+    ordering = ('-created',)
+
+admin.site.register(About)
+admin.site.site_header = "Pressons by Nana Administration"
+admin.site.site_title = "Pressons by Nana"
+admin.site.index_title = "Pressons by Nana"

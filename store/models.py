@@ -9,6 +9,7 @@ from django.contrib.contenttypes.fields import GenericRelation
 
 from mptt.models import MPTTModel, TreeForeignKey
 from taggit.managers import TaggableManager
+from ckeditor.fields import RichTextField
 
 # Create your models here.
 
@@ -24,6 +25,11 @@ class Category(MPTTModel):
         max_length=255,
         unique=True,
     )
+    img = models.ImageField(
+        help_text=_("category image"),
+        null=True,
+        upload_to='cat_imgs',
+        blank=True)
     slug = models.SlugField(verbose_name=_("Category safe URL"), max_length=255, unique=True)
     parent = TreeForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name="children")
     is_active = models.BooleanField(default=True)
@@ -37,6 +43,9 @@ class Category(MPTTModel):
 
     def get_absolute_url(self):
         return reverse('store:category-list', args=[self.slug])
+    
+    def get_blog_cat_url(self):
+        return reverse('store:blog-category-list', args=[self.slug])
 
     def __str__(self):
         return self.name
@@ -93,25 +102,25 @@ class Product(models.Model):
     slug = models.SlugField(max_length=255, null=True)
     regular_price = models.DecimalField(
         verbose_name=_("Regular price"),
-        help_text=_("Maximum 999.99"),
+        help_text=_("Maximum 999999999.99"),
         error_messages={
             "name": {
                 "max_length": _("The price must be between 0 and 999.99."),
             },
         },
-        max_digits=5,
+        max_digits=10,
         decimal_places=2,
         null=True,
     )
     discount_price = models.DecimalField(
         verbose_name=_("Discount price"),
-        help_text=_("Maximum 999.99"),
+        help_text=_("Maximum 999999999.99"),
         error_messages={
             "name": {
                 "max_length": _("The price must be between 0 and 999.99."),
             },
         },
-        max_digits=5,
+        max_digits=10,
         decimal_places=2,
         blank=True,
         null=True,
@@ -190,3 +199,74 @@ class ProductImage(models.Model):
     class Meta:
         verbose_name = _("Product Image")
         verbose_name_plural = _("Product Images")
+
+
+#blog tables
+class BlogPost(models.Model):
+    title = models.CharField(max_length=200, null=True)
+    slug = models.SlugField(null=True, unique=True)
+    category = models.ForeignKey(Category, on_delete=models.PROTECT, null=True, related_name='blog_cats')
+    content = RichTextField(null=True)
+    cover_img = models.ImageField(upload_to='blog_cover_img', null=True)
+    author = models.CharField(max_length=200, null=True)
+    is_active = models.BooleanField(
+        verbose_name=_("blog visibility"),
+        help_text=_("Change blog visibility"),
+        default=True,
+    )
+    updated = models.DateTimeField(auto_now=True, null=True)
+    created = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return self.title
+    
+
+class BlogImage(models.Model):
+    """
+    The Product Image table.
+    """
+
+    blog = models.ForeignKey(BlogPost, on_delete=models.CASCADE, related_name="blog_images")
+    image = models.ImageField(
+        verbose_name=_("image"),
+        help_text=_("Upload a product image"),
+        upload_to="blog_images/",
+        default="images/default.png",
+    )
+    alt_text = models.CharField(
+        verbose_name=_("Alturnative text"),
+        help_text=_("Please add alturnative text"),
+        max_length=255,
+        null=True,
+        blank=True,
+    )
+    created_at = models.DateTimeField(auto_now_add=True, editable=False)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = _("Product Image")
+        verbose_name_plural = _("Product Images")
+
+
+#contact table
+class About(models.Model):
+    company_name = models.CharField(max_length=600, null=True, help_text="Name of your company")
+    logo = models.ImageField(null=True, blank=True, upload_to='logo/')
+    instagram_link = models.URLField(null=True, blank=True, help_text="link to your instagram")
+    twitter_link = models.URLField(null=True, blank=True, help_text="link to your twitter")
+    facebook_link = models.URLField(null=True, blank=True, help_text="link to your facebook")
+    whatsapp_link = models.URLField(null=True, blank=True, help_text="link to your what's app")
+    about_text = RichTextField(null=True, help_text="what is your company like?")
+    phone_number = models.CharField(max_length=10, null=True, blank=True, help_text="your phone number")
+    other_number = models.CharField(max_length=10, null=True, blank=True, help_text="other phone number")
+    email = models.EmailField(null=True, blank=True, help_text="your email")
+    address = models.CharField(max_length=300, blank=True, null=True)
+    district = models.CharField(null=True, max_length=300, help_text="where are you based?")
+    location = models.CharField(max_length=300, null=True, help_text="eg area 18")
+
+    class Meta:
+        verbose_name = _("About  Us")
+        verbose_name_plural = _("About Us")
+
+    def __str__(self):
+        return 'do not add, just edit this one'

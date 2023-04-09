@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     # 'debug_toolbar',
     'taggit',
     'mptt',
+    'ckeditor',
+    'hitcount',
 
     # local apps
     'store',
@@ -55,6 +57,7 @@ INSTALLED_APPS = [
     'accounts',
     'order',
     'checkout',
+    'services.dashboard',
 ]
 
 MIDDLEWARE = [

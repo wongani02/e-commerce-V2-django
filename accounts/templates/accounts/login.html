@@ -75,7 +75,7 @@
                                                 <p>Please correct the following errors:</p>
                                                 {% for field in form %}
                                                 {% if field.errors %}
-                                                <div class="alert alert-primary" role="alert">
+                                                <div class="alert alert-danger" role="alert">
                                                     {{ field.label }}: {{ field.errors|striptags }}
                                                 </div>
                                                 {% endif %}

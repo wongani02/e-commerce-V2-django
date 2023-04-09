@@ -1,33 +1,47 @@
-from django.http.response import JsonResponse
-from django.shortcuts import render
+from django.http import HttpResponseRedirect
+from django.shortcuts import render, get_list_or_404
+from django.db.models import Q
 
 from basket.basket import Basket
 
 from .models import Order, OrderItem
+from .forms import AnonymousOrderSearchForm
 
 
-def add(request):
-    basket = Basket(request)
-    if request.POST.get('action') == 'post':
-
-        order_key = request.POST.get('order_key')
-        user_id = request.user.id
-        baskettotal = basket.get_total_price()
-
-        # Check if order exists
-        if Order.objects.filter(order_key=order_key).exists():
-            pass
-        else:
-            order = Order.objects.create(user_id=user_id, full_name='name', address1='add1',
-                                address2='add2', total_paid=baskettotal, order_key=order_key)
-            order_id = order.pk
-
-            for item in basket:
-                OrderItem.objects.create(order_id=order_id, product=item['product'], price=item['price'], quantity=item['qty'])
-
-        response = JsonResponse({'success': 'Return something'})
-        return response
+def getOrder(request):
+    # q = None
+    form = AnonymousOrderSearchForm()
+    if request.method == 'POST':
+        form = AnonymousOrderSearchForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['order_email']
+            order_key = form.cleaned_data['order_key']
+            try:
+                order = get_list_or_404(Order, email=email, order_key=order_key)
+            except:
+                context = {'form':form,}
+                return render(request, 'order/order-not-found.html', context)     
+    context = {
+        'order': order,
+    }
+    return render(request, 'order/my-account.html', context)
 
 
-def payment_confirmation(data):
-    Order.objects.filter(order_key=data).update(billing_status=True)
+def orderTrackingView(request):
+    form = AnonymousOrderSearchForm()
+    if request.method == 'POST':
+        form = AnonymousOrderSearchForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['order_email']
+            order_key = form.cleaned_data['order_key']
+            try:
+                order = get_list_or_404(Order, email=email, order_key=order_key)
+                return render(request, 'order/my-account.html', context={'order': order,})
+            except:
+                context = {'form':form,}
+                return render(request, 'order/order-not-found.html', context)     
+    context = {
+        'form':form,
+    }
+    return render(request, 'order/order-tracking.html', context)
+

@@ -1,3 +1,5 @@
+import os
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
@@ -20,7 +22,6 @@ from .forms import UserRegistrationForm, UserEditForm, UserAddressForm, UserLogi
 from store.models import Product
 from order.models import Order
 
-import os
 
 # Create your views here.
 
@@ -32,10 +33,13 @@ def account_login(request):
             email = form.cleaned_data.get('email')
             password = form.cleaned_data.get('password')
             user = authenticate(email=email, password=password)
-            if user is not None:
+            if user is not None and user.is_active:
                 auth_login(request, user)
-                return redirect('/') 
-            else: 
+                return redirect('accounts:dashboard') 
+            else:
+                # if user.is_active==False:
+                #     messages.error(request, 'Account does not exist') 
+                #     return HttpResponseRedirect(request.META["HTTP_REFERER"])
                 messages.warning(request, 'Invalid credentials')
                 return HttpResponseRedirect(request.META["HTTP_REFERER"])
         else:
@@ -99,7 +103,7 @@ def activation_sent(request):
 
 @auth_user_should_not_access
 def resend_activation(request):
-    pk =  request.session['user_id']
+    pk = request.session['user_id']
     user = get_object_or_404(Customer, pk=pk)
     token = get_object_or_404(UserToken, user=user)
     user_token = token.token
@@ -284,7 +288,6 @@ def add_to_wishlist(request, id):
         product.users_wishlist.add(request.user)
         messages.success(request, "Added " + product.title + " to your WishList")
     return HttpResponseRedirect(request.META["HTTP_REFERER"])
-
 
 
 @login_required(login_url='accounts:accounts-login')

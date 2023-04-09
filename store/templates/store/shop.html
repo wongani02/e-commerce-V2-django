@@ -80,7 +80,12 @@
                                                     </div>
                                                     <h3><a href="{% url 'store:product-detail' item.product_url %}">{{item.product_name}}</a></h3>
                                                     <div class="product-price-2">
-                                                        <span class="new-price blue">MWK {{item.regular_price}}</span>
+                                                        {% if item.discount_price %}
+                                                        <span class="new-price">MWK {{item.discount_price}}</span>
+                                                        <span class="old-price">MWK {{item.regular_price}}</span>
+                                                        {% else %}
+                                                        <span class="">MWK {{item.regular_price}}</span>
+                                                        {% endif %}
                                                         <!-- <span class="old-price">$45.80</span> -->
                                                     </div>
                                                 </div>
@@ -97,8 +102,12 @@
                                                     </div>
                                                     <h3><a href="{% url 'store:product-detail' item.product_url %}">{{item.product_name}}</a></h3>
                                                     <div class="product-price-2">
-                                                        <span class="new-price">MWK {{item.regular_price}}</span>
-                                                        <!-- <span class="old-price">$45.80</span> -->
+                                                        {% if item.discount_price %}
+                                                        <span class="new-price">MWK {{item.discount_price}}</span>
+                                                        <span class="old-price">MWK {{item.regular_price}}</span>
+                                                        {% else %}
+                                                        <span class="">MWK {{item.regular_price}}</span>
+                                                        {% endif %}
                                                     </div>
                                                     <div class="pro-add-to-cart">
                                                         <a class="animated btn-1-padding-4 btn-1-blue btn-1-font-14" href="{% url 'store:product-detail' item.product_url %}">View Product</a>
@@ -133,8 +142,12 @@
                                                 <div class="shop-list-content">
                                                     <h3><a href="{% url 'store:product-detail' item.product_url%}">{{item.product_name}}</a></h3>
                                                     <div class="pro-list-price">
-                                                        <span class="new-price">MWK {{item.regular_price}}</span>
-                                                        <!-- <span class="old-price">$45.80</span> -->
+                                                        {% if item.discount_price %}
+                                                        <span class="new-price">MWK {{item.discount_price}}</span>
+                                                        <span class="old-price">MWK {{item.regular_price}}</span>
+                                                        {% else %}
+                                                        <span class="">MWK {{item.regular_price}}</span>
+                                                        {% endif %}
                                                     </div>
                                                     <div class="product-list-rating-wrap">
                                                         <div class="product-list-rating">
@@ -193,7 +206,6 @@
                                         {% for item in category %}
                                         <li><a href="{{item.get_absolute_url}}">{{item.name}}</a></li>
                                         {% endfor %}
-                                        
                                     </ul>
                                 </div>
                             </div>
@@ -297,7 +309,7 @@
                                     </ul>
                                 </div>
                             </div> -->
-                            <div class="sidebar-widget shop-sidebar-border pt-40">
+                            <!-- <div class="sidebar-widget shop-sidebar-border pt-40">
                                 <h4 class="sidebar-widget-title">Popular Tags</h4>
                                 <div class="tag-wrap sidebar-widget-tag">
                                     {% for item in categories %}
@@ -305,37 +317,10 @@
                                     {% endfor %}
                                     
                                 </div>
-                            </div>
+                            </div> -->
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <!-- <div class="subscribe-area bg-gray pt-115 pb-115">
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-5 col-md-5">
-                        <div class="section-title">
-                            <h2>keep connected</h2>
-                            <p>Get updates by subscribe our weekly newsletter</p>
-                        </div>
-                    </div>
-                    <div class="col-lg-7 col-md-7">
-                        <div id="mc_embed_signup" class="subscribe-form">
-                            <form id="mc-embedded-subscribe-form" class="validate subscribe-form-style" novalidate="" target="_blank" name="mc-embedded-subscribe-form" method="post" action="http://devitems.us11.list-manage.com/subscribe/post?u=6bbb9b6f5827bd842d9640c82&amp;id=05d85f18ef">
-                                <div id="mc_embed_signup_scroll" class="mc-form">
-                                    <input class="email" type="email" required="" placeholder="Enter your email address" name="EMAIL" value="">
-                                    <div class="mc-news" aria-hidden="true">
-                                        <input type="text" value="" tabindex="-1" name="b_6bbb9b6f5827bd842d9640c82_05d85f18ef">
-                                    </div>
-                                    <div class="clear">
-                                        <input id="mc-embedded-subscribe" class="button" type="submit" name="subscribe" value="Subscribe">
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div> -->
 {% endblock %}

@@ -72,6 +72,7 @@
                             <div class="billing-info-wrap mr-30">
                                 <h3>Billing Details</h3>
                                 <form method="post" action=".">
+                                    {% csrf_token %}
                                     <div class="row">
                                         <div class="col-lg-6 col-md-6">
                                             <div class="billing-info mb-20">
@@ -89,27 +90,7 @@
                                                 {{form.last_name.errors}}
                                             </div>
                                         </div>
-                                        <div class="col-lg-12">
-                                            <div class="billing-info mb-20">
-                                                <label>Company Name <abbr class="required" title="required">*</abbr></label>
-                                                {{form.company_name}}
-                                                {{form.company_name.errors}}
-                                                <!-- <input type="text"> -->
-                                            </div>
-                                        </div>
-                                        <!-- <div class="col-lg-12">
-                                            <div class="billing-select mb-20">
-                                                <label>Country <abbr class="required" title="required">*</abbr></label>
-                                                <select>
-                                                    <option>Select a country</option>
-                                                    <option>Azerbaijan</option>
-                                                    <option>Bahamas</option>
-                                                    <option>Bahrain</option>
-                                                    <option>Bangladesh</option>
-                                                    <option>Barbados</option>
-                                                </select>
-                                            </div>
-                                        </div> -->
+                                        
                                         <div class="col-lg-12">
                                             <div class="billing-info mb-20">
                                                 <label>Street Address <abbr class="required" title="required">*</abbr></label>

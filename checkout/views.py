@@ -1,15 +1,16 @@
 import json
 
-from accounts.models import Address
-from basket.basket import Basket
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 
-from order.models import Order, OrderItem
+from order.models import Order, OrderItem, AnonymousUser
+from order.forms import AnonymousOrderSearchForm
 from store.models import Product
+from accounts.models import Address
+from basket.basket import Basket
 
 from .models import DeliveryOptions
 from .forms import NoAuthCheckoutForm
@@ -69,9 +70,33 @@ def noAuthCheckoutView(request):
     if request.method == "POST":
         form = NoAuthCheckoutForm(request.POST) 
         if form.is_valid():
-            print(form.cleaned_data)
+            session['anonymous_user'] = {
+                'first_name': form.cleaned_data['first_name'],
+                'last_name': form.cleaned_data['last_name'],
+                'email': form.cleaned_data['email'],
+                'phone_number': form.cleaned_data['phone_number'],
+                'district_or_city': form.cleaned_data['district_or_city'],
+                'street_address': form.cleaned_data['street_address'],
+                'other_address': form.cleaned_data['other_address'],
+                'additional_notes': form.cleaned_data['additional_notes'],
+            }
+            return redirect('checkout:payment_selection')
     else:
-        form = NoAuthCheckoutForm()
+        if 'anonymous_user' in session:
+            form = NoAuthCheckoutForm(
+                initial={
+                    'first_name': session['anonymous_user']['first_name'],
+                    'last_name': session['anonymous_user']['last_name'],
+                    'email': session['anonymous_user']['email'],
+                    'phone_number': session['anonymous_user']['phone_number'],
+                    'district_or_city': session['anonymous_user']['district_or_city'],
+                    'street_address': session['anonymous_user']['street_address'],
+                    'other_address': session['anonymous_user']['other_address'],
+                    'additional_notes': session['anonymous_user']['additional_notes'],
+                }
+            )
+        else:   
+            form = NoAuthCheckoutForm()
     context = {
         'form': form,
     }
@@ -102,60 +127,79 @@ def delivery_address(request):
     return render(request, "checkout/checkout.html", context)
 
 
-# def check_page(request):
-#     addresses = Address.objects.filter(customer=request.user).order_by("-default")
-#     return render(request, 'checkout/checkout.html', {'addresses': addresses})
-
-@login_required
 def payment_selection(request):
-    addresses = Address.objects.filter(customer=request.user).order_by("-default")
-    session = request.session
-    if "address" not in request.session:
-        messages.success(request, "Please select address option")
-        return HttpResponseRedirect(request.META["HTTP_REFERER"])
+    address = None
+    if request.user.is_authenticated:
+        address = Address.objects.filter(customer=request.user).order_by("-default")
+        if "address" not in request.session:
+            messages.success(request, "Please select address option")
+            return HttpResponseRedirect(request.META["HTTP_REFERER"])
+    else:
+        address = request.session['anonymous_user']
 
-    return render(request, "checkout/payment.html", {"addresses": addresses})
+    return render(request, "checkout/payment.html", {"addresses": address})
 
 #pay pal 
 
-from paypalcheckoutsdk.orders import OrdersGetRequest
-
-from .paypal import PayPalClient
 
 
-@login_required
 def payment_complete(request):
-    PPClient = PayPalClient()
-
+    session = request.session
     body = json.loads(request.body)
-    data = body["orderID"]
-    user_id = request.user.id
-
-    requestorder = OrdersGetRequest(data)
-    response = PPClient.client.execute(requestorder)
-
-    total_paid = response.result.purchase_units[0].amount.value
-
     basket = Basket(request)
-    order = Order.objects.create(
-        user_id=user_id,
-        full_name=response.result.purchase_units[0].shipping.name.full_name,
-        email=response.result.payer.email_address,
-        address1=response.result.purchase_units[0].shipping.address.address_line_1,
-        address2=response.result.purchase_units[0].shipping.address.admin_area_2,
-        postal_code=response.result.purchase_units[0].shipping.address.postal_code,
-        country_code=response.result.purchase_units[0].shipping.address.country_code,
-        total_paid=response.result.purchase_units[0].amount.value,
-        order_key=response.result.id,
-        payment_option="paypal",
-        billing_status=True,
-    )
-    order_id = order.pk
+    delivery_option = get_object_or_404(DeliveryOptions, pk=session["purchase"]["delivery_id"])
+
+    if request.user.is_authenticated:
+        user_id = request.user.id
+
+        order = Order.objects.create(
+            user_id=user_id,
+            full_name=body['fullname'],
+            email=body['email'],
+            address1=body['address_1'],
+            address2=body['address_2'],
+            postal_code=body['postalCode'],
+            country_code=body['countryCode'],
+            total_paid=body['totalPaid'],
+            order_key=body['orderId'],
+            payment_option="paypal",
+            delivery_option=delivery_option,
+            billing_status=True,
+        )
+        order_id = order.pk
+    else:
+        if 'anonymous_user' in session:
+            annony_user = AnonymousUser.objects.create(
+                name = session['anonymous_user']['first_name']+' '+session['anonymous_user']['last_name'],
+                email = session['anonymous_user']['email'],
+                address1 = session['anonymous_user']['street_address'],
+                address2 = session['anonymous_user']['other_address'],
+                city = session['anonymous_user']['email'],
+                phone = session['anonymous_user']['phone_number'],
+            )
+            annony_user_id = annony_user.id
+
+        order = Order.objects.create(
+            anony_user_id=annony_user_id,
+            full_name=body['fullname'],
+            email=body['email'],
+            address1=body['address_1'],
+            address2=body['address_2'],
+            phone=session['anonymous_user']['phone_number'],
+            postal_code=body['postalCode'],
+            country_code=body['countryCode'],
+            total_paid=body['totalPaid'],
+            delivery_option=delivery_option,
+            order_key=body['orderId'],
+            payment_option="paypal",
+            billing_status=True,
+        )
+        order_id = order.pk
+        
 
     for item in basket:
         OrderItem.objects.create(order_id=order_id, product=item["product"], price=item["price"], quantity=item["qty"])
         product = get_object_or_404(Product, pk=item["product"].id)
-        print(product)
         in_stock = product.in_stock
         new_stock = in_stock - item['qty']
         product.in_stock = new_stock
@@ -164,8 +208,12 @@ def payment_complete(request):
     return JsonResponse("Payment completed!", safe=False)
 
 
-@login_required
+
 def payment_successful(request):
     basket = Basket(request)
     basket.clear()
-    return render(request, "checkout/success.html", {})
+    if 'anonymous_user' in request.session:
+        del request.session['anonymous_user']
+
+    form = AnonymousOrderSearchForm()
+    return render(request, "checkout/success.html", {'form': form})

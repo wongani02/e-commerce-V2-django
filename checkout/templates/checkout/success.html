@@ -15,29 +15,44 @@
             </div>
         </div>
         
-        <div class="order-tracking-area pt-110 pb-120">
+        <div class="order-tracking-area pt-10 pb-20">
             <div class="container">
                 <div class="row">
                     <div class="col-xl-6 col-lg-8 col-md-10 ml-auto mr-auto">
                         <div class="order-tracking-content">
                             <p>Your order has been placed.Thank you for using our service!!
                             </p>
+                            {% if not request.user.is_authenticated %}
+                            To track your order please enter your Order ID in the box below and press the "View Receipt" button. This was given to you in the order confirmation email you should have received.
+                            {% endif %}
                             <div class="order-track-btn">
                                 <!-- <a href="{% url 'accounts:dashboard' %}">View Dashboard</a> -->
                             </div>
                             <div class="order-tracking-form">
-                                <form action="#">
-                                    <!-- <div class="sin-order-tracking">
-                                        <label>Order ID</label>
-                                        <input type="text" placeholder="Found in your order confirmation email.">
-                                    </div>
-                                    <div class="sin-order-tracking">
-                                        <label>Billing Email</label>
-                                        <input type="email" placeholder="Email you used during checkout">
-                                    </div> -->
+                                <form method="post" action="{% url 'orders:get-order' %}">
+                                    {% csrf_token %}
+                                    {% if request.user.is_authenticated %}
                                     <div class="order-track-btn">
                                         <a href="{% url 'accounts:dashboard' %}">View Dashboard</a>
                                     </div>
+                                    {% else %}
+                                    <div class="sin-order-tracking">
+                                        <label>Order ID</label>
+                                        <!-- <input type="text" placeholder="Found in your order confirmation email."> -->
+                                        {{form.order_key}}
+                                        {{form.order_key.errors}}
+                                    </div>
+                                    <div class="sin-order-tracking">
+                                        <label>Billing Email</label>
+                                        <!-- <input type="email" placeholder="Email you used during checkout">
+                                         -->
+                                        {{form.order_email}}
+                                        {{form.order_email.errors}}
+                                    </div>
+                                    <div class="order-track-btn">
+                                        <button class="btn btn-dark w-100" type="submit">View Receipt</button>
+                                    </div>
+                                    {% endif %}
                                 </form>
                             </div> 
                         </div>

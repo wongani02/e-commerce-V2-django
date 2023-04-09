@@ -15,10 +15,10 @@ class NoAuthCheckoutForm(forms.Form):
         widget=forms.TextInput(attrs={'class': '', 'placeholder':'eg 088223****'}),
         max_length=10,
     )
-    company_name = forms.CharField(
-        widget=forms.TextInput(attrs={'class': '','placeholder':'eg Tech IQ'}),
-        required=False
-    )
+    # company_name = forms.CharField(
+    #     widget=forms.TextInput(attrs={'class': '','placeholder':'eg Tech IQ'}),
+    #     required=False
+    # )
     district_or_city = forms.CharField(
         widget=forms.TextInput(attrs={'class': '','placeholder':'eg Lilongwe'})
     )
